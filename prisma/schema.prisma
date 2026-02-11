@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int        @id @default(autoincrement())
+  email      String     @unique
+  name       String
+  passwordHash String @default("")
+  avatarUrl  String?
+  playlists  Playlist[]
+  history    PlayHistory[]
+  createdAt  DateTime   @default(now())
+}
+
+model Artist {
+  id        Int      @id @default(autoincrement())
+  name      String
+  imageUrl  String?
+  albums    Album[]
+  tracks    Track[]
+  createdAt DateTime @default(now())
+}
+
+model Album {
+  id        Int      @id @default(autoincrement())
+  title     String
+  coverUrl  String?
+  year      Int?
+  artist    Artist   @relation(fields: [artistId], references: [id])
+  artistId  Int
+  tracks    Track[]
+  createdAt DateTime @default(now())
+
+  @@index([artistId])
+}
+
+model Track {
+  id              Int             @id @default(autoincrement())
+  title           String
+  durationSeconds Int
+  audioUrl        String?
+  album           Album           @relation(fields: [albumId], references: [id])
+  albumId         Int
+  artist          Artist          @relation(fields: [artistId], references: [id])
+  artistId        Int
+  playlistTracks  PlaylistTrack[]
+  createdAt       DateTime        @default(now())
+
+  @@index([albumId])
+  @@index([artistId])
+}
+
+model Playlist {
+  id             Int             @id @default(autoincrement())
+  name           String
+  description    String?
+  coverUrl       String?
+  user           User            @relation(fields: [userId], references: [id])
+  userId         Int
+  playlistTracks PlaylistTrack[]
+  createdAt      DateTime        @default(now())
+
+  @@index([userId])
+}
+
+model PlaylistTrack {
+  playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  playlistId Int
+  track      Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  trackId    Int
+  order      Int      @default(0)
+
+  @@id([playlistId, trackId])
+  @@index([trackId])
+}
+
+model PlayHistory {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
+  trackTitle String
+  trackArtist String
+  trackAlbum  String?
+  audioUrl   String?
+  playedAt   DateTime @default(now())
+
+  @@index([userId, playedAt])
+}
