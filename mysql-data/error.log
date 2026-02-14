@@ -2,3 +2,7 @@
 2026-02-11T17:08:39.953843Z 0 [Warning] [MY-010915] [Server] 'NO_ZERO_DATE', 'NO_ZERO_IN_DATE' and 'ERROR_FOR_DIVISION_BY_ZERO' sql modes should be used with strict mode. They will be merged with strict mode in a future release.
 2026-02-11T17:08:39.954345Z 0 [System] [MY-010116] [Server] C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqld.exe (mysqld 8.0.45) starting as process 29176
 2026-02-11T17:08:40.020725Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2026-02-11T17:08:40.452897Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-02-11T17:08:40.974690Z 0 [Warning] [MY-011302] [Server] Plugin mysqlx reported: 'Failed at SSL configuration: "SSL context is not usable without certificate and private key"'
+2026-02-11T17:08:40.978049Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060
+2026-02-11T17:08:40.978592Z 0 [System] [MY-010931] [Server] C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqld.exe: ready for connections. Version: '8.0.45'  socket: ''  port: 3307  MySQL Community Server - GPL.
