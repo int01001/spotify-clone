@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
-import { fetchJamendoTracks } from '../../../lib/jamendo';
+import { fetchAudiusTrendingTracks } from '../../../lib/audius';
 
 export async function GET() {
+  const audioFeed = await fetchAudiusTrendingTracks(10).catch(() => []);
+  let playlists: any[] = [];
+  let albums: any[] = [];
+  let artists: any[] = [];
+
   try {
-    const [playlists, albums, artists, jamendoTracks] = await Promise.all([
+    [playlists, albums, artists] = await Promise.all([
       prisma.playlist.findMany({
         take: 6,
         include: {
@@ -26,36 +31,35 @@ export async function GET() {
         orderBy: { createdAt: 'desc' },
         include: { _count: { select: { tracks: true } } },
       }),
-      fetchJamendoTracks(10),
     ]);
-
-    return NextResponse.json({
-      featuredPlaylists: playlists.map((p) => ({
-        id: p.id,
-        name: p.name,
-        description: p.description,
-        coverUrl: p.coverUrl,
-        owner: { id: p.user.id, name: p.user.name },
-        tracks: p.playlistTracks.map((pt) => ({
-          id: pt.track.id,
-          title: pt.track.title,
-          artist: pt.track.artist.name,
-          album: pt.track.album.title,
-          durationSeconds: pt.track.durationSeconds,
-        })),
-      })),
-      newReleases: albums,
-      topArtists: artists.map((a) => ({
-        id: a.id,
-        name: a.name,
-        imageUrl: a.imageUrl,
-        trackCount: a._count.tracks,
-      })),
-      trendingTracks: jamendoTracks,
-    });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ message: 'Server error' }, { status: 500 });
+    console.error('DB unavailable in /api/home, returning fallback payload.', error);
   }
+
+  return NextResponse.json({
+    featuredPlaylists: playlists.map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      coverUrl: p.coverUrl,
+      owner: { id: p.user.id, name: p.user.name },
+      tracks: p.playlistTracks.map((pt: any) => ({
+        id: pt.track.id,
+        title: pt.track.title,
+        artist: pt.track.artist.name,
+        album: pt.track.album.title,
+        durationSeconds: pt.track.durationSeconds,
+      })),
+    })),
+    newReleases: albums,
+    topArtists: artists.map((a: any) => ({
+      id: a.id,
+      name: a.name,
+      imageUrl: a.imageUrl,
+      trackCount: a._count.tracks,
+    })),
+    trendingTracks: audioFeed,
+  });
 }
+
 export const dynamic = 'force-dynamic';

@@ -31,8 +31,8 @@ export async function GET() {
 
     return NextResponse.json(serialized);
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ message: 'Server error' }, { status: 500 });
+    console.error('DB unavailable in /api/playlists, returning empty list.', error);
+    return NextResponse.json([]);
   }
 }
 

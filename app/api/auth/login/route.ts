@@ -13,7 +13,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Email and password are required.' }, { status: 400 });
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
   if (!user || !user.passwordHash || !verifyPassword(password, user.passwordHash)) {
     const res = NextResponse.json({ message: 'Invalid credentials.' }, { status: 401 });
     clearAuthCookie(res);

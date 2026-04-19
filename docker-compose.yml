@@ -6,10 +6,10 @@ services:
     container_name: spotify-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: spotify_data
-      MYSQL_USER: spotify_app
-      MYSQL_PASSWORD: spotify_pass
+      MYSQL_ROOT_PASSWORD: Dhoni@28
+      MYSQL_DATABASE: spotify
+      MYSQL_USER: spotify_clone_app
+      MYSQL_PASSWORD: Dhoni@28
     ports:
       - "3306:3306"
     volumes:

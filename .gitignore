@@ -3,10 +3,8 @@ dist
 .next
 .turbo
 .vercel
-.env
 .env.local
 .env.development.local
 .env.production.local
 .env.test.local
-.env
 .DS_Store

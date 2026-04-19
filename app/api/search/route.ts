@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchJamendoTracks } from '../../../lib/jamendo';
+import { fetchAudiusSearchTracks } from '../../../lib/audius';
 import { prisma } from '../../../lib/prisma';
 
 export async function GET(req: NextRequest) {
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const jamendo = await fetchJamendoTracks(30, q);
+    const feed = await fetchAudiusSearchTracks(q, 30);
 
     const [artists, albums, localTracks] = await Promise.all([
       prisma.artist.findMany({
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
-    const tracks = jamendo.length ? jamendo : localTracks;
+    const tracks = feed.length ? feed : localTracks;
 
     return NextResponse.json({ tracks, artists, albums });
   } catch (error) {
@@ -36,4 +36,5 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: 'Server error' }, { status: 500 });
   }
 }
+
 export const dynamic = 'force-dynamic';
