@@ -25,6 +25,12 @@ export default function Page() {
   const [newPlaylist, setNewPlaylist] = useState({ name: '', description: '' });
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Library Pagination State
+  const [libraryTracks, setLibraryTracks] = useState<Track[]>([]);
+  const [librarySkip, setLibrarySkip] = useState(0);
+  const [loadingLibrary, setLoadingLibrary] = useState(false);
+  const [hasMoreLibrary, setHasMoreLibrary] = useState(true);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [history, setHistory] = useState<
@@ -41,6 +47,15 @@ export default function Page() {
         setNowPlaying(initial);
         setQueue(home.trendingTracks);
         setQueueIndex(0);
+
+        try {
+          const initialLibrary = await api.getTracks(30, 0);
+          setLibraryTracks(initialLibrary);
+          setLibrarySkip(30);
+          if (initialLibrary.length < 30) setHasMoreLibrary(false);
+        } catch {
+          // ignore library errors
+        }
 
         try {
           const meRes = await fetch('/api/auth/me').then((r) => r.json());
@@ -94,6 +109,21 @@ export default function Page() {
     }
   };
 
+  const loadMoreLibrary = async () => {
+    if (loadingLibrary || !hasMoreLibrary) return;
+    setLoadingLibrary(true);
+    try {
+      const more = await api.getTracks(30, librarySkip);
+      if (more.length < 30) setHasMoreLibrary(false);
+      setLibraryTracks((prev) => [...prev, ...more]);
+      setLibrarySkip((prev) => prev + 30);
+    } catch {
+      setError('Could not load more tracks.');
+    } finally {
+      setLoadingLibrary(false);
+    }
+  };
+
   const heroTrack = useMemo(() => homeData?.trendingTracks[0], [homeData]);
 
   const recordHistory = async (track: Track) => {
@@ -131,7 +161,10 @@ export default function Page() {
       audioRef.current
         .play()
         .then(() => setError(null))
-        .catch(() => setError('Browser blocked autoplay. Press play in the bottom bar.'));
+        .catch((err) => {
+          console.warn('Autoplay prevented by browser:', err);
+          // Do not set a critical page error for standard browser autoplay blocking
+        });
     }
     recordHistory(track);
   };
@@ -416,6 +449,35 @@ export default function Page() {
               </div>
             </section>
           ) : null}
+
+          {/* All Songs Library Section */}
+          <section className="space-y-4" id="all-songs-library">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold">All Songs Library</h3>
+              <span className="text-xs text-white/50">{libraryTracks.length} loaded</span>
+            </div>
+            <div className="rounded-2xl border border-white/5 bg-white/5 divide-y divide-white/5">
+              {libraryTracks.map((track, idx) => (
+                <TrackRow
+                  key={`${track.id}-${idx}`}
+                  track={track}
+                  index={idx}
+                  onPlay={(t) => playTrack(t, libraryTracks)}
+                />
+              ))}
+            </div>
+            {hasMoreLibrary && (
+              <div className="flex justify-center pt-4">
+                <button
+                  onClick={loadMoreLibrary}
+                  disabled={loadingLibrary}
+                  className="px-6 py-3 rounded-full bg-white/10 text-white font-semibold hover:bg-white/20 transition-colors disabled:opacity-50"
+                >
+                  {loadingLibrary ? 'Loading...' : 'Load More'}
+                </button>
+              </div>
+            )}
+          </section>
         </main>
       </div>
       <NowPlaying track={nowPlaying} audioRef={audioRef} onNext={playNext} onPrev={playPrev} />

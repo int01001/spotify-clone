@@ -16,7 +16,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   getHome: () => request<HomeResponse>('/api/home'),
-  getTracks: (limit = 30) => request<Track[]>(`/api/tracks?limit=${limit}`),
+  getTracks: (limit = 30, skip = 0) => request<Track[]>(`/api/tracks?limit=${limit}&skip=${skip}`),
   getPlaylists: () => request<PlaylistSummary[]>('/api/playlists'),
   search: (q: string) => request<SearchResponse>(`/api/search?q=${encodeURIComponent(q)}`),
   createPlaylist: (payload: { name: string; description?: string; coverUrl?: string }) =>
